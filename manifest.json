@@ -1,0 +1,28 @@
+{
+  "name": "محلل الذهب XAU/USD",
+  "short_name": "محلل الذهب",
+  "description": "أداة تحليل الذهب الكامل — تأثير الأخبار الاقتصادية على XAU/USD",
+  "start_url": "./gold_analyzer.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0d0d",
+  "theme_color": "#C9A84C",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
