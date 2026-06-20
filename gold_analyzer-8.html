@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#C9A84C">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="محلل الذهب">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>محلل الذهب XAU/USD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0A0E1A;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1f2d45;
+    --gold: #C9A84C;
+    --gold2: #E8C97A;
+    --up: #22c55e;
+    --up-bg: rgba(34,197,94,0.08);
+    --down: #ef4444;
+    --down-bg: rgba(239,68,68,0.08);
+    --warn: #f59e0b;
+    --warn-bg: rgba(245,158,11,0.08);
+    --neutral: #60a5fa;
+    --neutral-bg: rgba(96,165,250,0.08);
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #475569;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .header-tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,.3);
+    border-radius: 20px;
+    padding: 4px 14px;
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-size: clamp(22px, 5vw, 36px);
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--gold2), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .header p {
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .update-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--up);
+    background: var(--up-bg);
+    border: 1px solid rgba(34,197,94,.25);
+    border-radius: 20px;
+    padding: 5px 14px;
+  }
+  .update-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--up);
+    flex-shrink: 0;
+  }
+  .update-badge.badge-warn {
+    color: var(--warn);
+    background: var(--warn-bg);
+    border-color: rgba(245,158,11,.25);
+  }
+  .update-badge.badge-warn .update-dot { background: var(--warn); }
+  .update-badge.badge-danger {
+    color: var(--down);
+    background: var(--down-bg);
+    border-color: rgba(239,68,68,.25);
+  }
+  .update-badge.badge-danger .update-dot { background: var(--down); }
+
+  /* VERDICT BAR */
+  .verdict-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .verdict-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+  }
+  .verdict-text { flex: 1; min-width: 160px; }
+  .verdict-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+  .verdict-main { font-size: 20px; font-weight: 600; }
+  .verdict-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .verdict-score { text-align: center; flex-shrink: 0; }
+  .score-circle {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-weight: 600;
+  }
+  .score-num { font-size: 18px; line-height: 1; }
+  .score-lbl { font-size: 9px; color: var(--text3); text-transform: uppercase; }
+
+  /* SECTIONS */
+  .section { margin-bottom: 20px; }
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon { font-size: 18px; }
+  .section-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .section-sub { font-size: 11px; color: var(--text3); margin-right: auto; }
+
+  /* NEWS GRID */
+  .news-grid { display: grid; gap: 10px; }
+
+  .news-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    transition: border-color .2s;
+  }
+  .news-card:hover { border-color: rgba(201,168,76,.3); }
+
+  .news-top {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .news-name { font-size: 14px; font-weight: 600; flex: 1; }
+  .news-time { font-size: 11px; color: var(--text3); }
+  .news-importance {
+    font-size: 10px; padding: 2px 8px;
+    border-radius: 20px; font-weight: 500;
+  }
+  .imp-critical { background: rgba(239,68,68,.15); color: var(--down); }
+  .imp-high { background: rgba(245,158,11,.15); color: var(--warn); }
+  .imp-medium { background: rgba(96,165,250,.15); color: var(--neutral); }
+
+  .inputs-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .input-group { display: flex; flex-direction: column; gap: 4px; }
+  .input-label { font-size: 11px; color: var(--text3); }
+  .input-field {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: inherit;
+    width: 100%;
+    transition: border-color .2s;
+  }
+  .input-field:focus { outline: none; border-color: var(--gold); }
+  .input-field::placeholder { color: var(--text3); }
+
+  .news-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: inherit;
+    width: 100%;
+    cursor: pointer;
+    transition: border-color .2s;
+    -webkit-appearance: none;
+  }
+  .news-select:focus { outline: none; border-color: var(--gold); }
+
+  .analyze-btn {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, var(--gold), #8B6914);
+    border: none;
+    border-radius: 6px;
+    color: #0A0E1A;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity .2s;
+    margin-top: 4px;
+  }
+  .analyze-btn:hover { opacity: .85; }
+
+  .news-result {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+    line-height: 1.6;
+  }
+  .news-result.show { display: block; }
+  .result-up { background: var(--up-bg); border: 1px solid rgba(34,197,94,.2); }
+  .result-down { background: var(--down-bg); border: 1px solid rgba(239,68,68,.2); }
+  .result-warn { background: var(--warn-bg); border: 1px solid rgba(245,158,11,.2); }
+  .result-neutral { background: var(--neutral-bg); border: 1px solid rgba(96,165,250,.2); }
+
+  .result-title { font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+  .result-body { color: var(--text2); }
+  .result-arrow { font-size: 22px; margin-left: 8px; }
+
+  /* CORRELATIONS */
+  .corr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .corr-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .corr-assets { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .corr-type { font-size: 11px; margin-bottom: 8px; }
+  .corr-inputs { display: flex; gap: 6px; margin-bottom: 8px; }
+  .corr-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 12px;
+    color: var(--text);
+    font-family: inherit;
+    width: 100%;
+  }
+  .corr-input:focus { outline: none; border-color: var(--gold); }
+  .corr-btn {
+    width: 100%;
+    padding: 7px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--gold);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .corr-btn:hover { background: var(--border); }
+  .corr-result { margin-top: 8px; font-size: 12px; display: none; padding: 8px; border-radius: 6px; }
+  .corr-result.show { display: block; }
+
+  /* GLOBAL VERDICT */
+  .global-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .global-title {
+    font-size: 13px; font-weight: 600; margin-bottom: 16px;
+    color: var(--gold);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .signals-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .signal-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    display: inline-block; margin-left: 6px;
+  }
+  .dot-up { background: var(--up); }
+  .dot-down { background: var(--down); }
+  .dot-neutral { background: var(--text3); }
+
+  .calc-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--gold), #8B6914);
+    border: none;
+    border-radius: 8px;
+    color: #0A0E1A;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+  .calc-btn:hover { opacity: .85; }
+
+  .final-verdict {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .final-verdict.show { display: block; }
+  .fv-icon { font-size: 40px; margin-bottom: 8px; }
+  .fv-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .fv-sub { font-size: 13px; opacity: .8; margin-bottom: 12px; }
+  .fv-rules { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .fv-rule { font-size: 11px; padding: 4px 10px; border-radius: 20px; background: rgba(255,255,255,.08); }
+
+  /* REAL RATE CALCULATOR */
+  .calc-section {
+    background: var(--surface);
+    border: 1px solid rgba(201,168,76,.2);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .calc-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .calc-result-box {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+    margin-top: 12px;
+    display: none;
+  }
+  .calc-result-box.show { display: block; }
+  .crb-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+  .crb-value { font-size: 28px; font-weight: 700; }
+  .crb-verdict { font-size: 13px; margin-top: 6px; }
+
+  /* FOOTER */
+  .footer { text-align: center; margin-top: 32px; color: var(--text3); font-size: 12px; }
+  .gold-line { height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 24px 0; }
+
+  /* TAGS */
+  .tag { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 20px; margin: 2px; font-weight: 500; }
+  .tag-up { background: var(--up-bg); color: var(--up); border: 1px solid rgba(34,197,94,.2); }
+  .tag-down { background: var(--down-bg); color: var(--down); border: 1px solid rgba(239,68,68,.2); }
+  .tag-warn { background: var(--warn-bg); color: var(--warn); border: 1px solid rgba(245,158,11,.2); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-tag">XAU/USD Analysis Tool</div>
+  <h1>محلل الذهب الكامل</h1>
+  <p>أدخل نتائج الأخبار وشوف التأثير المباشر على الذهب</p>
+  <div class="update-badge" id="update-badge"><span class="update-dot" id="update-dot"></span><span id="update-badge-text">جاري التحقق من آخر تحديث...</span></div>
+  <div style="margin-top:14px">
+    <button class="analyze-btn" id="fetch-btn" style="width:auto;padding:10px 28px;display:inline-flex;align-items:center;gap:8px" onclick="fetchAllData()">
+      <span id="fetch-icon">🔄</span> إعادة تحميل البيانات
+    </button>
+    <div id="fetch-status" style="margin-top:10px;font-size:12px;color:var(--text2);display:none"></div>
+    <p style="margin-top:8px;font-size:11px;color:var(--text3)">📡 البيانات تتحدّث تلقائياً كل 6 ساعات من مصادر رسمية (FRED) — بلا أي تدخل منك</p>
+  </div>
+</div>
+
+<!-- REAL RATE CALCULATOR -->
+<div class="calc-section">
+  <div class="section-header">
+    <span class="section-icon">🧮</span>
+    <span class="section-title">حاسبة Real Interest Rate</span>
+    <span class="section-sub">الأقوى تأثيراً على الذهب</span>
+  </div>
+  <div class="calc-row">
+    <div class="input-group">
+      <label class="input-label">Fed Rate %</label>
+      <input class="input-field" id="fed-rate" type="number" step="0.25" placeholder="3.75" value="3.75">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Core PCE سنوي %</label>
+      <input class="input-field" id="pce-annual" type="number" step="0.1" placeholder="2.4" value="3.3">
+    </div>
+    <div class="input-group">
+      <label class="input-label">PCE شهري % (اختياري)</label>
+      <input class="input-field" id="pce-monthly" type="number" step="0.1" placeholder="0.2" value="0.2">
+    </div>
+  </div>
+  <button class="analyze-btn" onclick="calcRealRate()">احسب Real Rate</button>
+  <div class="calc-result-box" id="real-rate-result">
+    <div class="crb-label">Real Interest Rate</div>
+    <div class="crb-value" id="rr-value">--</div>
+    <div class="crb-verdict" id="rr-verdict">--</div>
+  </div>
+</div>
+
+<!-- SECTION 1: FUNDAMENTAL NEWS -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">📅</span>
+    <span class="section-title">الأخبار الفونداميتالية — أدخل النتائج</span>
+    <span class="section-sub">بالترتيب الشهري</span>
+  </div>
+  <div class="news-grid">
+
+    <!-- NFP -->
+    <div class="news-card" id="card-nfp">
+      <div class="news-top">
+        <span class="news-name">NFP — Non-Farm Payrolls</span>
+        <span class="news-time">أول جمعة الشهر</span>
+        <span class="news-importance imp-critical">الأعلى</span>
+      </div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label class="input-label">Forecast (K)</label>
+          <input class="input-field" id="nfp-forecast" type="number" placeholder="180" value="85">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Actual (K)</label>
+          <input class="input-field" id="nfp-actual" type="number" placeholder="150" value="172">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Previous (K)</label>
+          <input class="input-field" id="nfp-prev" type="number" placeholder="200" value="179">
+        </div>
+      </div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label class="input-label">Unemployment Actual %</label>
+          <input class="input-field" id="unemp-actual" type="number" step="0.1" placeholder="4.1" value="4.3">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Unemployment Forecast %</label>
+          <input class="input-field" id="unemp-forecast" type="number" step="0.1" placeholder="4.0" value="4.3">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Wages Actual %</label>
+          <input class="input-field" id="wages-actual" type="number" step="0.1" placeholder="0.3" value="0.3">
+        </div>
+      </div>
+      <button class="analyze-btn" onclick="analyzeNews('nfp')">تحليل NFP</button>
+      <div class="news-result" id="result-nfp"></div>
+    </div>
+
+    <!-- CPI -->
+    <div class="news-card" id="card-cpi">
+      <div class="news-top">
+        <span class="news-name">CPI + Core CPI</span>
+        <span class="news-time">منتصف الشهر</span>
+        <span class="news-importance imp-critical">الأعلى</span>
+      </div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label class="input-label">CPI Forecast %</label>
+          <input class="input-field" id="cpi-forecast" type="number" step="0.1" placeholder="3.0" value="4.2">
+        </div>
+        <div class="input-group">
+          <label class="input-label">CPI Actual %</label>
+          <input class="input-field" id="cpi-actual" type="number" step="0.1" placeholder="2.5" value="4.2">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Core CPI Actual %</label>
+          <input class="input-field" id="core-cpi-actual" type="number" step="0.1" placeholder="2.1" value="2.9">
+        </div>
+      </div>
+      <button class="analyze-btn" onclick="analyzeNews('cpi')">تحليل CPI</button>
+      <div class="news-result" id="result-cpi"></div>
+    </div>
+
+    <!-- PCE -->
+    <div class="news-card" id="card-pce">
+      <div class="news-top">
+        <span class="news-name">PCE + Core PCE</span>
+        <span class="news-time">آخر الشهر</span>
+        <span class="news-importance imp-critical">حكم الفيدرالي</span>
+      </div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label class="input-label">PCE شهري %</label>
+          <input class="input-field" id="pce-m-actual" type="number" step="0.1" placeholder="0.2" value="0.4">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Core PCE شهري %</label>
+          <input class="input-field" id="core-pce-actual" type="number" step="0.1" placeholder="0.2" value="0.2">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Core PCE سنوي %</label>
+          <input class="input-field" id="core-pce-annual" type="number" step="0.1" placeholder="2.4" value="3.3">
+        </div>
+      </div>
+      <button class="analyze-btn" onclick="analyzeNews('pce')">تحليل PCE</button>
+      <div class="news-result" id="result-pce"></div>
+    </div>
+
+    <!-- FOMC -->
+    <div class="news-card" id="card-fomc">
+      <div class="news-top">
+        <span class="news-name">FOMC Rate + Statement + Dot Plot</span>
+        <span class="news-time">كل 6 أسابيع</span>
+        <span class="news-importance imp-critical">الأخطر</span>
+      </div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label class="input-label">قرار Fed Rate</label>
+          <select class="news-select" id="fomc-decision">
+            <option value="">اختر...</option>
+            <option value="cut">خفض (Cut) 🕊️</option>
+            <option value="hold" selected>ثابت (Hold)</option>
+            <option value="hike">رفع (Hike) 🦅</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Dot Plot</label>
+          <select class="news-select" id="dot-plot">
+            <option value="">اختر...</option>
+            <option value="lower">النقط نزلت (Dovish)</option>
+            <option value="same">النقط ثابتة</option>
+            <option value="higher" selected>النقط طلعت (Hawkish)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Powell Tone</label>
+          <select class="news-select" id="powell-tone">
+            <option value="">اختر...</option>
+            <option value="dovish">Dovish 🕊️</option>
+            <option value="neutral" selected>Neutral</option>
+            <option value="hawkish">Hawkish 🦅</option>
+          </select>
+        </div>
+      </div>
+      <button class="analyze-btn" onclick="analyzeNews('fomc')">تحليل FOMC</button>
+      <div class="news-result" id="result-fomc"></div>
+    </div>
+
+    <!-- GDP -->
+    <div class="news-card" id="card-gdp">
+      <div class="news-top">
+        <span class="news-name">Advance GDP Q/Q</span>
+        <span class="news-time">كل 3 شهور</span>
+        <span class="news-importance imp-high">مهم</span>
+      </div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label class="input-label">Forecast %</label>
+          <input class="input-field" id="gdp-forecast" type="number" step="0.1" placeholder="1.5" value="2.2">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Actual %</label>
+          <input class="input-field" id="gdp-actual" type="number" step="0.1" placeholder="-0.3" value="1.6">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Previous %</label>
+          <input class="input-field" id="gdp-prev" type="number" step="0.1" placeholder="2.1" value="0.5">
+        </div>
+      </div>
+      <button class="analyze-btn" onclick="analyzeNews('gdp')">تحليل GDP</button>
+      <div class="news-result" id="result-gdp"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="gold-line"></div>
+
+<!-- SECTION 2: CORRELATIONS -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🔗</span>
+    <span class="section-title">الـ Corrélations — أدخل القيم الحالية</span>
+    <span class="section-sub">علاقة الذهب بالأسواق</span>
+  </div>
+  <div class="corr-grid">
+
+    <div class="corr-card">
+      <div class="corr-assets">ذهب vs DXY</div>
+      <div class="corr-type" style="color:var(--down)">عكسية 100% دائماً</div>
+      <div class="corr-inputs">
+        <div style="flex:1">
+          <div class="input-label" style="margin-bottom:4px">DXY دابا</div>
+          <input class="corr-input" id="dxy-val" type="number" step="0.1" placeholder="104.5" value="99.5">
+        </div>
+        <div style="flex:1">
+          <div class="input-label" style="margin-bottom:4px">DXY اتجاه</div>
+          <select class="news-select" id="dxy-dir" style="padding:6px 8px;font-size:12px">
+            <option value="">...</option>
+            <option value="up">يطلع ⬆️</option>
+            <option value="down" selected>يهبط ⬇️</option>
+          </select>
+        </div>
+      </div>
+      <button class="corr-btn" onclick="analyzeCorr('dxy')">تحليل</button>
+      <div class="corr-result" id="cr-dxy"></div>
+    </div>
+
+    <div class="corr-card">
+      <div class="corr-assets">ذهب vs 10Y Yield</div>
+      <div class="corr-type" style="color:var(--down)">عكسية 100% دائماً</div>
+      <div class="corr-inputs">
+        <div style="flex:1">
+          <div class="input-label" style="margin-bottom:4px">10Y Yield %</div>
+          <input class="corr-input" id="y10-val" type="number" step="0.01" placeholder="4.20" value="4.45">
+        </div>
+        <div style="flex:1">
+          <div class="input-label" style="margin-bottom:4px">اتجاه</div>
+          <select class="news-select" id="y10-dir" style="padding:6px 8px;font-size:12px">
+            <option value="">...</option>
+            <option value="up">يطلع ⬆️</option>
+            <option value="down" selected>يهبط ⬇️</option>
+          </select>
+        </div>
+      </div>
+      <button class="corr-btn" onclick="analyzeCorr('10y')">تحليل</button>
+      <div class="corr-result" id="cr-10y"></div>
+    </div>
+
+    <div class="corr-card">
+      <div class="corr-assets">2Y vs 10Y — Yield Curve</div>
+      <div class="corr-type" style="color:var(--warn)">إشارة ركود إذا 2Y فوق 10Y</div>
+      <div class="corr-inputs">
+        <div style="flex:1">
+          <div class="input-label" style="margin-bottom:4px">2Y Yield %</div>
+          <input class="corr-input" id="y2-val" type="number" step="0.01" placeholder="4.50" value="4.06">
+        </div>
+        <div style="flex:1">
+          <div class="input-label" style="margin-bottom:4px">10Y Yield %</div>
+          <input class="corr-input" id="y10-val2" type="number" step="0.01" placeholder="4.20" value="4.45">
+        </div>
+      </div>
+      <button class="corr-btn" onclick="analyzeCorr('curve')">تحليل</button>
+      <div class="corr-result" id="cr-curve"></div>
+    </div>
+
+    <div class="corr-card">
+      <div class="corr-assets">ذهب vs النفط</div>
+      <div class="corr-type" style="color:var(--up)">إيجابية غالباً</div>
+      <div class="corr-inputs">
+        <div style="flex:1">
+          <div class="input-label" style="margin-bottom:4px">نفط $</div>
+          <input class="corr-input" id="oil-val" type="number" step="0.1" placeholder="75" value="76.0">
+        </div>
+        <div style="flex:1">
+          <div class="input-label" style="margin-bottom:4px">اتجاه</div>
+          <select class="news-select" id="oil-dir" style="padding:6px 8px;font-size:12px">
+            <option value="">...</option>
+            <option value="up">يطلع ⬆️</option>
+            <option value="down" selected>يهبط ⬇️</option>
+          </select>
+        </div>
+      </div>
+      <button class="corr-btn" onclick="analyzeCorr('oil')">تحليل</button>
+      <div class="corr-result" id="cr-oil"></div>
+    </div>
+
+    <div class="corr-card">
+      <div class="corr-assets">Géopolitique</div>
+      <div class="corr-type" style="color:var(--warn)">حسب حجم الأزمة</div>
+      <div class="corr-inputs" style="display:block">
+        <div class="input-label" style="margin-bottom:4px">نوع الأزمة</div>
+        <select class="news-select" id="geo-type" style="margin-bottom:6px">
+          <option value="">اختر...</option>
+          <option value="war-limited">حرب محدودة</option>
+          <option value="war-wide">حرب واسعة</option>
+          <option value="tariffs">Tariffs / حرب تجارية</option>
+          <option value="trust">أزمة ثقة في أمريكا</option>
+          <option value="oil-crisis">أزمة نفط</option>
+          <option value="none" selected>لا شيء (هدنة أمريكا-إيران بصدد التوقيع)</option>
+        </select>
+      </div>
+      <button class="corr-btn" onclick="analyzeCorr('geo')">تحليل</button>
+      <div class="corr-result" id="cr-geo"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="gold-line"></div>
+
+<!-- SECTION 3: GLOBAL VERDICT -->
+<div class="global-section">
+  <div class="global-title">⚡ التحليل الكامل — الحكم النهائي على الذهب</div>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:16px">بعد ما أدخلت كل النتائج — اضغط باش تشوف الحكم الكامل</p>
+  <button class="calc-btn" onclick="globalVerdict()">🥇 احكم على الذهب الآن</button>
+  <div class="final-verdict" id="final-verdict"></div>
+</div>
+
+<div class="footer">
+  <p>محلل الذهب XAU/USD — بني خطوة بخطوة مع المنتور</p>
+  <p style="margin-top:8px;font-size:11px;color:var(--text3)">البيانات معبأة من BLS, BEA, Federal Reserve, CME FedWatch — بتاريخ 17 يونيو 2026. لتحديثها لاحقاً، بدّل القيم يدوياً فالخانات.</p>
+</div>
+
+<script>
+// SIGNALS STORE
+const signals = {};
+
+function setSignal(key, val) { signals[key] = val; }
+
+// ============================================
+// AUTO-FETCH LIVE DATA (from data.json — auto-updated server-side)
+// ============================================
+
+// load saved FRED key from browser storage + check data freshness
+window.addEventListener('DOMContentLoaded', () => {
+  loadDataFromJSON();
+});
+
+function checkDataFreshness(updatedAtISO) {
+  const badge = document.getElementById('update-badge');
+  const text = document.getElementById('update-badge-text');
+
+  const last = new Date(updatedAtISO);
+  const now = new Date();
+  const diffMs = now - last;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const dateStr = last.toLocaleDateString('ar-MA', { year: 'numeric', month: 'long', day: 'numeric' });
+  const timeStr = last.toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+
+  badge.classList.remove('badge-warn', 'badge-danger');
+
+  let agoText;
+  if (diffDays <= 0) {
+    agoText = 'اليوم';
+  } else if (diffDays === 1) {
+    agoText = 'منذ يوم واحد';
+  } else {
+    agoText = `منذ ${diffDays} أيام`;
+  }
+
+  if (diffDays >= 2) {
+    badge.classList.add('badge-danger');
+    text.textContent = `⚠️ آخر تحديث: ${dateStr} ${timeStr} UTC (${agoText}) — قد يكون هناك خلل فالتحديث التلقائي`;
+  } else if (diffDays >= 1) {
+    badge.classList.add('badge-warn');
+    text.textContent = `آخر تحديث: ${dateStr} ${timeStr} UTC (${agoText})`;
+  } else {
+    text.textContent = `آخر تحديث: ${dateStr} ${timeStr} UTC (${agoText}) — البيانات حديثة ✓ تحديث تلقائي كل 6 ساعات`;
+  }
+}
+
+function setFetchStatus(msg, isError) {
+  const el = document.getElementById('fetch-status');
+  el.style.display = 'block';
+  el.textContent = msg;
+  el.style.color = isError ? 'var(--down)' : 'var(--text2)';
+}
+
+function setVal(id, value, decimals) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = (decimals !== undefined) ? Number(value).toFixed(decimals) : value;
+}
+
+// خريطة من أسماء الحقول فـ data.json لمعرفات خانات الـ HTML
+const FIELD_MAP = {
+  fed_rate:            [{ id: 'fed-rate', decimals: 2 }],
+  core_pce_annual:     [{ id: 'pce-annual', decimals: 1 }, { id: 'core-pce-annual', decimals: 1 }],
+  core_pce_monthly:    [{ id: 'pce-monthly', decimals: 1 }, { id: 'core-pce-actual', decimals: 1 }],
+  pce_monthly:         [{ id: 'pce-m-actual', decimals: 1 }],
+  cpi_yoy:             [{ id: 'cpi-actual', decimals: 1 }],
+  core_cpi_yoy:        [{ id: 'core-cpi-actual', decimals: 1 }],
+  nfp_actual:          [{ id: 'nfp-actual', decimals: 0 }],
+  nfp_previous:        [{ id: 'nfp-prev', decimals: 0 }],
+  unemployment_rate:   [{ id: 'unemp-actual', decimals: 1 }],
+  gdp_actual:          [{ id: 'gdp-actual', decimals: 1 }],
+  gdp_previous:        [{ id: 'gdp-prev', decimals: 1 }],
+  yield_10y:           [{ id: 'y10-val', decimals: 2 }, { id: 'y10-val2', decimals: 2 }],
+  yield_2y:            [{ id: 'y2-val', decimals: 2 }],
+  dxy:                 [{ id: 'dxy-val', decimals: 2 }],
+  oil_wti:             [{ id: 'oil-val', decimals: 1 }],
+};
+
+// تحميل data.json تلقائياً مجرد ما تفتح الصفحة — بلا أي تدخل، بلا CORS، بلا proxy
+// لأن data.json كاين فنفس المجلد ونفس origin
+async function loadDataFromJSON() {
+  const btn = document.getElementById('fetch-btn');
+  const icon = document.getElementById('fetch-icon');
+  if (btn) btn.disabled = true;
+  if (icon) icon.textContent = '⏳';
+  setFetchStatus('🔄 جاري تحميل البيانات...', false);
+
+  try {
+    // cache-bust بسيط باش يجيب آخر نسخة ديال data.json ماشي وحدة مخزنة قديمة
+    const res = await fetch('./data.json?t=' + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    let filled = 0;
+    for (const [key, targets] of Object.entries(FIELD_MAP)) {
+      const val = data.values && data.values[key];
+      if (val === undefined || val === null) continue;
+      for (const t of targets) {
+        setVal(t.id, val, t.decimals);
+      }
+      filled++;
+    }
+
+    // سعر الذهب — للعرض فقط، مكاين خانة مخصصة ليه فالنموذج
+    let goldStr = '';
+    if (data.values && data.values.gold_price) {
+      goldStr = ` | 🥇 XAU/USD: $${Number(data.values.gold_price).toFixed(2)}`;
+    }
+
+    checkDataFreshness(data.updated_at);
+
+    const errCount = data.errors ? Object.keys(data.errors).length : 0;
+    if (errCount === 0) {
+      setFetchStatus(`✅ تم تحميل ${filled} مؤشر تلقائياً${goldStr}`, false);
+    } else {
+      setFetchStatus(`⚠️ تم تحميل ${filled} مؤشر، ${errCount} فشلوا فالتحديث التلقائي الأخير${goldStr}`, true);
+    }
+  } catch (e) {
+    console.error('loadDataFromJSON failed:', e);
+    setFetchStatus('❌ تعذر تحميل البيانات — تحقق من الاتصال بالإنترنت وحاول مرة أخرى', true);
+  } finally {
+    if (btn) btn.disabled = false;
+    if (icon) icon.textContent = '🔄';
+  }
+}
+
+// الزر يعاود يحمّل آخر نسخة من data.json (المحدّثة تلقائياً كل 6 ساعات فالسيرفر)
+async function fetchAllData() {
+  await loadDataFromJSON();
+}
+
+
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('SW registered ✓'))
+      .catch(e => console.warn('SW registration failed:', e));
+  });
+}
+
+
+function calcRealRate() {
+  const fed = parseFloat(document.getElementById('fed-rate').value);
+  const pceA = parseFloat(document.getElementById('pce-annual').value);
+  const pceM = parseFloat(document.getElementById('pce-monthly').value);
+
+  let pce = pceA;
+  if (!pceA && pceM) pce = pceM * 12;
+
+  if (!fed || !pce) { alert('أدخل Fed Rate و PCE'); return; }
+
+  const rr = (fed - pce).toFixed(2);
+  const box = document.getElementById('real-rate-result');
+  const val = document.getElementById('rr-value');
+  const verdict = document.getElementById('rr-verdict');
+
+  val.textContent = (rr > 0 ? '+' : '') + rr + '%';
+
+  if (rr < 0) {
+    val.style.color = 'var(--up)';
+    verdict.innerHTML = '🚀 Real Rate سلبي — الدولار يخسر قيمته الحقيقية — <strong style="color:var(--up)">ذهب يطلع</strong>';
+    setSignal('realrate', 'up');
+  } else if (rr > 2) {
+    val.style.color = 'var(--down)';
+    verdict.innerHTML = '📉 Real Rate إيجابي قوي — الدولار يربح — <strong style="color:var(--down)">ذهب تحت ضغط</strong>';
+    setSignal('realrate', 'down');
+  } else {
+    val.style.color = 'var(--warn)';
+    verdict.innerHTML = '⚠️ Real Rate إيجابي بشوية — تأثير محدود — <strong style="color:var(--warn)">انتظر إشارة أخرى</strong>';
+    setSignal('realrate', 'neutral');
+  }
+
+  box.classList.add('show');
+}
+
+// NEWS ANALYSIS
+function analyzeNews(type) {
+  let html = '', cls = '', signal = 'neutral';
+
+  if (type === 'nfp') {
+    const f = parseFloat(document.getElementById('nfp-forecast').value);
+    const a = parseFloat(document.getElementById('nfp-actual').value);
+    const p = parseFloat(document.getElementById('nfp-prev').value);
+    const ua = parseFloat(document.getElementById('unemp-actual').value);
+    const uf = parseFloat(document.getElementById('unemp-forecast').value);
+    const w = parseFloat(document.getElementById('wages-actual').value);
+
+    if (!f || !a) { alert('أدخل Forecast و Actual'); return; }
+
+    const diff = a - f;
+    const vsP = p ? a - p : null;
+
+    if (diff < -30) {
+      signal = 'up';
+      cls = 'result-up';
+      html = `<div class="result-title" style="color:var(--up)">🚀 NFP ضعيف جداً — ذهب يطلع</div>
+      <div class="result-body">NFP خرج <strong>${a}K</strong> — أسوأ من التوقع بـ <strong>${Math.abs(diff).toFixed(0)}K</strong>
+      ${vsP !== null ? `<br>• مقارنة بالشهر اللي فات (${p}K): ${vsP > 0 ? 'تحسن' : 'تدهور'}` : ''}
+      ${ua && uf ? `<br>• البطالة: ${ua}% ${ua > uf ? '(أسوأ من التوقع ✓ يدعم طلوع الذهب)' : '(أحسن من التوقع)'}` : ''}
+      ${w ? `<br>• الأجور ${w}%: ${w > 0.3 ? 'مرتفعة — تضخم محتمل' : 'عادية'}` : ''}</div>`;
+    } else if (diff > 30) {
+      signal = 'down';
+      cls = 'result-down';
+      html = `<div class="result-title" style="color:var(--down)">📉 NFP قوي — ذهب تحت ضغط</div>
+      <div class="result-body">NFP خرج <strong>${a}K</strong> — أحسن من التوقع بـ <strong>${diff.toFixed(0)}K</strong>
+      ${w ? `<br>• الأجور ${w}% ${w > 0.3 ? '— مرتفعة = inflation محتملة = الفيدرالي ما يخفضش' : '— عادية'}` : ''}
+      <br>• اقتصاد قوي = الفيدرالي ما يتعجلش في التخفيض</div>`;
+    } else {
+      signal = 'neutral';
+      cls = 'result-warn';
+      html = `<div class="result-title" style="color:var(--warn)">⚠️ NFP في حدود التوقع — تأثير محدود</div>
+      <div class="result-body">الفرق صغير — السوق ما يتحركش بقوة<br>انتظر CPI و PCE للتأكيد</div>`;
+    }
+    setSignal('nfp', signal);
+  }
+
+  else if (type === 'cpi') {
+    const cf = parseFloat(document.getElementById('cpi-forecast').value);
+    const ca = parseFloat(document.getElementById('cpi-actual').value);
+    const cc = parseFloat(document.getElementById('core-cpi-actual').value);
+
+    if (!cf || !ca) { alert('أدخل CPI Forecast و Actual'); return; }
+
+    const diff = ca - cf;
+
+    if (diff < -0.2 || (ca < 2.5 && cc < 2.5)) {
+      signal = 'up'; cls = 'result-up';
+      html = `<div class="result-title" style="color:var(--up)">🚀 CPI أحسن من التوقع — ذهب يطلع</div>
+      <div class="result-body">CPI <strong>${ca}%</strong> — أقل من Forecast ${cf}%
+      ${cc ? `<br>• Core CPI: ${cc}% ${cc < 2 ? '✅ تحت هدف الفيدرالي 2%' : cc < 2.5 ? '⚠️ قريب من الهدف' : '❌ فوق الهدف'}` : ''}
+      <br>• الفيدرالي يفكر في تخفيض = ذهب يطلع</div>`;
+    } else if (diff > 0.2 && cc > 2.5) {
+      signal = 'down'; cls = 'result-down';
+      html = `<div class="result-title" style="color:var(--down)">📉 CPI + Core CPI مرتفعين — ذهب يهبط</div>
+      <div class="result-body">CPI <strong>${ca}%</strong> — أسوأ من Forecast ${cf}%
+      ${cc ? `<br>• Core CPI: ${cc}% ❌ فوق 2% = تضخم حقيقي` : ''}
+      <br>• الفيدرالي ما يخفضش = دولار يبقى قوي</div>`;
+    } else if (diff > 0.2 && cc < 2.5) {
+      signal = 'neutral'; cls = 'result-warn';
+      html = `<div class="result-title" style="color:var(--warn)">⚠️ CPI مرتفع بصح Core CPI منخفض</div>
+      <div class="result-body">CPI مرتفع بسبب أكل أو طاقة — مشكل مؤقت
+      ${cc ? `<br>• Core CPI: ${cc}% — الفيدرالي يشوف هذا أهم` : ''}
+      <br>• تأثير محدود على الذهب — انتظر PCE</div>`;
+    } else {
+      signal = 'neutral'; cls = 'result-warn';
+      html = `<div class="result-title" style="color:var(--warn)">⚠️ CPI في التوقعات — انتظر Core PCE</div>
+      <div class="result-body">الأرقام قريبة من التوقعات — السوق ينتظر PCE للحسم</div>`;
+    }
+    setSignal('cpi', signal);
+  }
+
+  else if (type === 'pce') {
+    const pm = parseFloat(document.getElementById('pce-m-actual').value);
+    const cpm = parseFloat(document.getElementById('core-pce-actual').value);
+    const cpa = parseFloat(document.getElementById('core-pce-annual').value);
+
+    if (!cpa && !cpm) { alert('أدخل Core PCE على الأقل'); return; }
+
+    const annual = cpa || (cpm * 12);
+
+    if (annual < 2) {
+      signal = 'up'; cls = 'result-up';
+      html = `<div class="result-title" style="color:var(--up)">🚀 Core PCE تحت 2% — ذهب يطلع</div>
+      <div class="result-body">Core PCE السنوي: <strong>${annual.toFixed(1)}%</strong> ✅ تحت هدف الفيدرالي
+      ${pm !== undefined && !isNaN(pm) ? `<br>• PCE شهري: ${pm}% ${pm < 0 ? '❗ سلبي = الناس ما خرجوش فلوس = اقتصاد يتعب' : ''}` : ''}
+      <br>• الفيدرالي يخفض taux = دولار يضعف = ذهب يطلع</div>`;
+    } else if (annual > 2.5) {
+      signal = 'down'; cls = 'result-down';
+      html = `<div class="result-title" style="color:var(--down)">📉 Core PCE فوق 2.5% — الفيدرالي ما يخفضش</div>
+      <div class="result-body">Core PCE السنوي: <strong>${annual.toFixed(1)}%</strong> ❌ فوق الهدف بكثير
+      ${pm !== undefined && !isNaN(pm) ? `<br>• PCE شهري: ${pm}%` : ''}
+      <br>• الفيدرالي يبقى Hawkish = دولار قوي = ذهب تحت ضغط</div>`;
+    } else {
+      signal = 'neutral'; cls = 'result-warn';
+      html = `<div class="result-title" style="color:var(--warn)">⚠️ Core PCE بين 2% و 2.5% — الفيدرالي ينتظر</div>
+      <div class="result-body">Core PCE: <strong>${annual.toFixed(1)}%</strong> — قريب من الهدف
+      <br>• الفيدرالي حاير — ينتظر المزيد من البيانات
+      <br>• الذهب بدون اتجاه واضح — انتظر FOMC</div>`;
+    }
+    setSignal('pce', signal);
+  }
+
+  else if (type === 'fomc') {
+    const dec = document.getElementById('fomc-decision').value;
+    const dot = document.getElementById('dot-plot').value;
+    const pow = document.getElementById('powell-tone').value;
+
+    if (!dec && !dot && !pow) { alert('اختر على الأقل خيار واحد'); return; }
+
+    let ups = 0, downs = 0;
+    if (dec === 'cut') ups++;
+    else if (dec === 'hike') downs++;
+    if (dot === 'lower') ups++;
+    else if (dot === 'higher') downs++;
+    if (pow === 'dovish') ups++;
+    else if (pow === 'hawkish') downs++;
+
+    if (ups > downs) {
+      signal = 'up'; cls = 'result-up';
+      html = `<div class="result-title" style="color:var(--up)">🚀 FOMC Dovish — ذهب يطلع</div>
+      <div class="result-body">
+      ${dec === 'cut' ? '✅ الفيدرالي خفض الـ taux<br>' : ''}
+      ${dot === 'lower' ? '✅ Dot Plot: النقط نزلت — تخفيضات قادمة<br>' : ''}
+      ${pow === 'dovish' ? '✅ Powell تكلم Dovish — السوق يتوقع تخفيض' : ''}
+      <br>دولار يضعف = ذهب يطلع</div>`;
+    } else if (downs > ups) {
+      signal = 'down'; cls = 'result-down';
+      html = `<div class="result-title" style="color:var(--down)">📉 FOMC Hawkish — ذهب يهبط</div>
+      <div class="result-body">
+      ${dec === 'hike' ? '❌ الفيدرالي رفع الـ taux<br>' : ''}
+      ${dot === 'higher' ? '❌ Dot Plot: النقط طلعت — رفع قادم<br>' : ''}
+      ${pow === 'hawkish' ? '❌ Powell تكلم Hawkish — ما في تخفيض قريب' : ''}
+      <br>دولار يقوى = ذهب يهبط</div>`;
+    } else {
+      signal = 'neutral'; cls = 'result-warn';
+      html = `<div class="result-title" style="color:var(--warn)">⚠️ FOMC مختلط — تقلب في السوق</div>
+      <div class="result-body">الإشارات متضاربة — السوق في حيرة<br>انتظر وضوح قبل ما تدخل</div>`;
+    }
+    setSignal('fomc', signal);
+  }
+
+  else if (type === 'gdp') {
+    const f = parseFloat(document.getElementById('gdp-forecast').value);
+    const a = parseFloat(document.getElementById('gdp-actual').value);
+    const p = parseFloat(document.getElementById('gdp-prev').value);
+
+    if (isNaN(a)) { alert('أدخل GDP Actual'); return; }
+
+    if (a < 0 && p < 0) {
+      signal = 'up'; cls = 'result-up';
+      html = `<div class="result-title" style="color:var(--up)">🚀🚀 Récession رسمياً — ذهب يطير</div>
+      <div class="result-body">ربعين متتاليين سلبيين: ${p}% ثم ${a}%<br>
+      ❗ Récession رسمية — الفيدرالي سيخفض بسرعة<br>
+      دولار يضعف بقوة = ذهب يطير</div>`;
+    } else if (a < 0) {
+      signal = 'up'; cls = 'result-up';
+      html = `<div class="result-title" style="color:var(--up)">🚀 GDP سلبي — ذهب يطلع</div>
+      <div class="result-body">GDP: <strong>${a}%</strong> — اقتصاد ينكمش
+      ${!isNaN(f) ? `<br>• أسوأ من Forecast ${f}%` : ''}
+      <br>• الفيدرالي يفكر في تخفيض = ذهب يطلع</div>`;
+    } else if (a > 2) {
+      signal = 'down'; cls = 'result-down';
+      html = `<div class="result-title" style="color:var(--down)">📉 GDP قوي — ذهب تحت ضغط</div>
+      <div class="result-body">GDP: <strong>${a}%</strong> — اقتصاد ينمو بقوة
+      <br>• الفيدرالي ما يتعجلش في التخفيض</div>`;
+    } else {
+      signal = 'neutral'; cls = 'result-warn';
+      html = `<div class="result-title" style="color:var(--warn)">⚠️ GDP معتدل — تأثير محدود</div>
+      <div class="result-body">GDP: <strong>${a}%</strong> — اقتصاد ينمو ببطء<br>لا حار لا بارد — Goldilocks</div>`;
+    }
+    setSignal('gdp', signal);
+  }
+
+  const el = document.getElementById('result-' + type);
+  el.innerHTML = html;
+  el.className = 'news-result show ' + cls;
+}
+
+// CORRELATIONS
+function analyzeCorr(type) {
+  let html = '', cls = '';
+
+  if (type === 'dxy') {
+    const dir = document.getElementById('dxy-dir').value;
+    if (!dir) { alert('اختر اتجاه DXY'); return; }
+    if (dir === 'up') {
+      cls = 'result-down'; html = `📉 DXY يطلع = <strong style="color:var(--down)">ذهب يهبط</strong> — علاقة عكسية دائماً`;
+      setSignal('dxy', 'down');
+    } else {
+      cls = 'result-up'; html = `🚀 DXY يهبط = <strong style="color:var(--up)">ذهب يطلع</strong> — علاقة عكسية دائماً`;
+      setSignal('dxy', 'up');
+    }
+  }
+
+  else if (type === '10y') {
+    const dir = document.getElementById('y10-dir').value;
+    if (!dir) { alert('اختر اتجاه 10Y Yield'); return; }
+    if (dir === 'up') {
+      cls = 'result-down'; html = `📉 10Y Yield يطلع = <strong style="color:var(--down)">ذهب يهبط</strong> — السندات أجذب من الذهب`;
+      setSignal('10y', 'down');
+    } else {
+      cls = 'result-up'; html = `🚀 10Y Yield يهبط = <strong style="color:var(--up)">ذهب يطلع</strong> — الذهب يصير أجذب`;
+      setSignal('10y', 'up');
+    }
+  }
+
+  else if (type === 'curve') {
+    const y2 = parseFloat(document.getElementById('y2-val').value);
+    const y10 = parseFloat(document.getElementById('y10-val2').value);
+    if (isNaN(y2) || isNaN(y10)) { alert('أدخل 2Y و 10Y'); return; }
+    const spread = (y10 - y2).toFixed(2);
+    if (y2 > y10) {
+      cls = 'result-down';
+      html = `⚠️ <strong style="color:var(--down)">Yield Curve Inversion!</strong> 2Y (${y2}%) فوق 10Y (${y10}%)<br>
+      Spread: ${spread}% — إشارة ركود تاريخية<br>
+      <span style="color:var(--up)">على المدى البعيد: ركود = الفيدرالي يخفض = ذهب يطير 🚀</span>`;
+      setSignal('curve', 'warning');
+    } else {
+      cls = 'result-up';
+      html = `✅ Yield Curve طبيعية — 10Y (${y10}%) فوق 2Y (${y2}%)<br>Spread: +${spread}% — لا إشارة ركود`;
+      setSignal('curve', 'normal');
+    }
+  }
+
+  else if (type === 'oil') {
+    const dir = document.getElementById('oil-dir').value;
+    if (!dir) { alert('اختر اتجاه النفط'); return; }
+    if (dir === 'up') {
+      cls = 'result-up'; html = `🛢️ نفط يطلع = inflation محتملة = <strong style="color:var(--up)">ذهب يطلع غالباً</strong><br>⚠️ إذا طلع بزاف جداً = ركود = قد يهبط مؤقتاً`;
+      setSignal('oil', 'up');
+    } else {
+      cls = 'result-down'; html = `🛢️ نفط يهبط = inflation تنخفض = <strong style="color:var(--down)">ضغط على الذهب</strong>`;
+      setSignal('oil', 'down');
+    }
+  }
+
+  else if (type === 'geo') {
+    const g = document.getElementById('geo-type').value;
+    if (!g) { alert('اختر نوع الأزمة'); return; }
+    const gMap = {
+      'war-limited': { cls: 'result-warn', txt: '⚔️ حرب محدودة = ذهب يطلع أيام ثم يرجع<br>انتظر قبل ما تدخل — التأثير مؤقت', s: 'neutral' },
+      'war-wide': { cls: 'result-up', txt: '🚀 حرب واسعة = ذهب يطلع ويبقى<br>خوف كبير = ملاذ آمن لفترة طويلة', s: 'up' },
+      'tariffs': { cls: 'result-up', txt: '🚀 Tariffs / حرب تجارية = ذهب يطلع ويبقى<br>أزمة ثقة طويلة = تأثير استراتيجي', s: 'up' },
+      'trust': { cls: 'result-up', txt: '🚀🚀 أزمة ثقة في أمريكا = ذهب بدل الدولار<br>أقوى سيناريو لطلوع الذهب', s: 'up' },
+      'oil-crisis': { cls: 'result-warn', txt: '⚠️ أزمة نفط = تعارض<br>نفط يطلع (يدعم ذهب) + inflation (الفيدرالي ما يخفضش) = تقلب', s: 'neutral' },
+      'none': { cls: 'result-neutral', txt: '✅ لا أزمة جيوبوليتيكية = الفونداميتال يحكم وحده', s: 'neutral' }
+    };
+    const g2 = gMap[g];
+    cls = g2.cls; html = g2.txt;
+    setSignal('geo', g2.s);
+  }
+
+  const el = document.getElementById('cr-' + type);
+  el.innerHTML = html;
+  el.className = 'corr-result show ' + cls;
+}
+
+// GLOBAL VERDICT
+function globalVerdict() {
+  const keys = ['nfp','cpi','pce','fomc','gdp','realrate','dxy','10y','oil','geo'];
+  let ups = 0, downs = 0, neutrals = 0, total = 0;
+  const details = [];
+
+  keys.forEach(k => {
+    if (signals[k]) {
+      total++;
+      if (signals[k] === 'up') { ups++; details.push({ k, v: 'up' }); }
+      else if (signals[k] === 'down') { downs++; details.push({ k, v: 'down' }); }
+      else { neutrals++; details.push({ k, v: 'neutral' }); }
+    }
+  });
+
+  if (total === 0) {
+    alert('أدخل على الأقل خبر واحد أو corr واحدة قبل!'); return;
+  }
+
+  const el = document.getElementById('final-verdict');
+  const pct = Math.round((ups / total) * 100);
+  const dpct = Math.round((downs / total) * 100);
+
+  let icon, title, color, sub, bg;
+
+  if (ups > downs * 1.5) {
+    icon = '🚀'; title = 'ذهب يطلع'; color = 'var(--up)';
+    bg = 'rgba(34,197,94,0.08)'; sub = `${ups} إشارة صاعدة من ${total} — الاتجاه واضح للأعلى`;
+  } else if (downs > ups * 1.5) {
+    icon = '📉'; title = 'ذهب يهبط'; color = 'var(--down)';
+    bg = 'rgba(239,68,68,0.08)'; sub = `${downs} إشارة هابطة من ${total} — الاتجاه واضح للأسفل`;
+  } else if (ups > downs) {
+    icon = '📈'; title = 'ميل للصعود'; color = 'var(--warn)';
+    bg = 'rgba(245,158,11,0.08)'; sub = `${ups} صاعد vs ${downs} هابط — إشارات متقاربة، كن حذراً`;
+  } else if (downs > ups) {
+    icon = '📉'; title = 'ميل للهبوط'; color = 'var(--warn)';
+    bg = 'rgba(245,158,11,0.08)'; sub = `${downs} هابط vs ${ups} صاعد — إشارات متقاربة، كن حذراً`;
+  } else {
+    icon = '⚠️'; title = 'إشارات متضاربة'; color = 'var(--warn)';
+    bg = 'rgba(245,158,11,0.08)'; sub = 'الإشارات متعادلة — ما تدخلش، انتظر وضوح أكثر';
+  }
+
+  const names = { nfp:'NFP', cpi:'CPI', pce:'PCE', fomc:'FOMC', gdp:'GDP', realrate:'Real Rate', dxy:'DXY', '10y':'10Y Yield', oil:'نفط', geo:'جيو' };
+  const rulesHtml = details.map(d => {
+    const c = d.v === 'up' ? '#22c55e' : d.v === 'down' ? '#ef4444' : '#f59e0b';
+    const sym = d.v === 'up' ? '▲' : d.v === 'down' ? '▼' : '■';
+    return `<span class="fv-rule" style="color:${c}">${sym} ${names[d.k]}</span>`;
+  }).join('');
+
+  el.style.background = bg;
+  el.style.border = `1px solid ${color}33`;
+  el.innerHTML = `
+    <div class="fv-icon">${icon}</div>
+    <div class="fv-title" style="color:${color}">${title}</div>
+    <div class="fv-sub">${sub}</div>
+    <div class="fv-rules">${rulesHtml}</div>
+    <div style="margin-top:14px;font-size:12px;color:var(--text3)">
+      ${ups} صاعد · ${downs} هابط · ${neutrals} محايد من ${total} إشارة
+    </div>
+  `;
+  el.classList.add('show');
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+</body>
+</html>
